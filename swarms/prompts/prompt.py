@@ -18,6 +18,8 @@ from swarms.telemetry.capture_sys_data import (
 from swarms.tools.base_tool import BaseTool
 from swarms.utils.loguru_logger import initialize_logger
 
+from swarms.tools.hub import hub_client
+
 logger = initialize_logger("prompt")
 
 
@@ -257,6 +259,16 @@ class Prompt(BaseModel):
         )
         with open(file_path, "w") as file:
             json.dump(self.model_dump(), file)
+        
+        pid = f"prompt-id-{self.id}.json"
+        logger.warning(f"=== _save_message start: {pid}")
+        try:
+            msgdict = json.dumps(self.model_dump(), ensure_ascii=False)
+        except Exception as e:
+            msgdict = json.dumps(self.model_dump())
+        hub_client.upload_hub("swarms", pid, msgdict)
+        logger.warning(f"=== _save_message done")
+        
         # logger.info(f"Autosaved prompt {self.id} to {file_path}.")
 
         # return "Prompt autosaved successfully."

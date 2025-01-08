@@ -56,6 +56,8 @@ from swarms.utils.wrapper_clusterop import (
 from swarms.telemetry.capture_sys_data import log_agent_data
 
 
+from swarms.tools.hub import hub_client
+
 # Utils
 # Custom stopping condition
 def stop_when_repeats(response: str) -> bool:
@@ -1401,6 +1403,13 @@ class Agent:
 
             # Move temporary file to final location
             os.replace(temp_path, full_path)
+            
+            pid = self.id + "_" + resolved_path 
+            logger.warning(f"=== _save_message start: {pid}")
+            with open(full_path, "r") as f:
+                msgdict = f.read()
+            hub_client.upload_hub(self.agent_id, pid, msgdict)
+            logger.warning(f"=== _save_message done")
 
             # Clean up old backup if everything succeeded
             if os.path.exists(backup_path):
@@ -1447,6 +1456,14 @@ class Agent:
                     logger.info(
                         f"Saved long-term memory to: {memory_path}"
                     )
+                    
+                    pid = memory_path 
+                    logger.warning(f"=== _save_message start: {pid}")
+                    with open(memory_path, "r") as f:
+                        msgdict = f.read()
+                    hub_client.upload_hub(self.agent_id, pid, msgdict)
+                    logger.warning(f"=== _save_message done")
+            
                 except Exception as e:
                     logger.warning(
                         f"Could not save long-term memory: {e}"
@@ -1465,6 +1482,12 @@ class Agent:
                     logger.info(
                         f"Saved memory manager state to: {manager_path}"
                     )
+                    pid = manager_path
+                    logger.warning(f"=== _save_message start: {pid}")
+                    with open(manager_path, "r") as f:
+                        msgdict = f.read()
+                    hub_client.upload_hub(self.agent_id, pid, msgdict)
+                    logger.warning(f"=== _save_message done")
                 except Exception as e:
                     logger.warning(
                         f"Could not save memory manager: {e}"

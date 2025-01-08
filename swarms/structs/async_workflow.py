@@ -17,6 +17,8 @@ from swarms.structs.agent import Agent
 from swarms.structs.base_workflow import BaseWorkflow
 from swarms.utils.loguru_logger import initialize_logger
 
+from swarms.tools.hub import hub_client
+
 # Base logger initialization
 logger = initialize_logger("async_workflow")
 
@@ -559,6 +561,13 @@ class AsyncWorkflow(BaseWorkflow):
                 )
 
             self.logger.info(f"Workflow results saved to {filename}")
+            
+            pid = f"workflow_{self.workflow_id}_{end_time.strftime('%Y%m%d_%H%M%S')}.json" 
+            logger.warning(f"=== _save_message start: {pid}")
+            with open(filename, "r") as f:
+                msgdict = f.read()
+            hub_client.upload_hub(self.agent_id, pid, msgdict)
+            logger.warning(f"=== _save_message done")
         except Exception as e:
             self.logger.error(
                 f"Error saving workflow results: {str(e)}"

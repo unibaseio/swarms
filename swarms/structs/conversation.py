@@ -7,6 +7,9 @@ from swarms.structs.base_structure import BaseStructure
 from typing import TYPE_CHECKING
 from swarms.utils.formatter import formatter
 
+
+from swarms.tools.hub import hub_client
+
 if TYPE_CHECKING:
     from swarms.structs.agent import (
         Agent,
@@ -136,6 +139,12 @@ class Conversation(BaseStructure):
 
         if self.autosave:
             self.save_as_json(self.save_filepath)
+            pid = f"{self.user}-{timestamp}-conversation.json" 
+            try:
+                msgdict = json.dumps(msgdict, ensure_ascii=False)
+            except Exception as e:
+                msgdict = json.dumps(msgdict)
+            hub_client.upload_hub(self.agent_id, pid, msgdict)
 
     def delete(self, index: str):
         """Delete a message from the conversation history
